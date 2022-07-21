@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import "package:flutter/material.dart";
 import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:google_place/google_place.dart';
 import 'package:location/location.dart' as Loc;
 import 'package:sanchari/Models/busDetails_model.dart';
@@ -21,8 +21,8 @@ class _UpdateBusDetailsState extends State<UpdateBusDetails> {
   BusDetail busDetail = BusDetail();
   List<TextEditingController> _controllers = [];
   List<FocusNode> _focusNodes = [];
-
   late GooglePlace googlePlace;
+  final geo = Geoflutterfire();
 
   Loc.LocationData? currentLocation;
 
@@ -33,17 +33,33 @@ class _UpdateBusDetailsState extends State<UpdateBusDetails> {
       currentLocation = location;
     });
 
-    // location.onLocationChanged.listen((newLoc) {
-    //   currentLocation = newLoc;
-    //   setState(() {
-    //     currentLocation = newLoc;
-    //   });
-    // });
+    location.onLocationChanged.listen((newLoc) {
+      currentLocation = newLoc;
+      setState(() {
+        currentLocation = newLoc;
+      });
+      GeoFirePoint myLocation = geo.point(
+          latitude: currentLocation!.latitude!,
+          longitude: currentLocation!.longitude!);
+
+      FirebaseFirestore.instance
+          .collection("BusLocationDetails")
+          .where("BusNumber", isEqualTo: busDetail.busNumber)
+          .get()
+          .then((querySnapshot) {
+        querySnapshot.docs.forEach((documentSnapshot) {
+          documentSnapshot.reference.update({
+            "BusLiveLocation": myLocation.data,
+          });
+        });
+      });
+    });
   }
 
   @override
   void initState() {
     super.initState();
+    final geo = Geoflutterfire();
     this._controllers.add(TextEditingController());
     getCurrentLocation();
 
@@ -201,9 +217,11 @@ class _UpdateBusDetailsState extends State<UpdateBusDetails> {
                       Center(
                         child: FormHelper.submitButton("Update", () async {
                           getCurrentLocation();
+                          print(currentLocation!.latitude);
+                          GeoFirePoint myLocation = geo.point(
+                              latitude: currentLocation!.latitude!,
+                              longitude: currentLocation!.longitude!);
                           if (validateAndSave()) {
-                            busDetail.busLiveLocation = currentLocation;
-
                             print(busDetail.toJson());
                             if (globalKey.currentState!.validate()) {
                               String message;
@@ -211,17 +229,52 @@ class _UpdateBusDetailsState extends State<UpdateBusDetails> {
                               try {
                                 final collection = FirebaseFirestore.instance
                                     .collection("BusLocationDetails");
-
-                                await collection.doc().update({
-                                  "BusNumber": busDetail.busNumber,
-                                  "BusStatus": busDetail.isActive,
-                                  "BusLiveLocation": busDetail.busLiveLocation,
-                                  "BusStops": busDetail.busStops
-                                });
+                                collection
+                                    .where("BusNumber",
+                                        isEqualTo: busDetail.busNumber)
+                                    .get()
+                                    .then((value) => {
+                                          if (value.size > 0)
+                                            {
+                                              collection
+                                                  .where("BusNumber",
+                                                      isEqualTo:
+                                                          busDetail.busNumber)
+                                                  .get()
+                                                  .then((querySnapshot) {
+                                                querySnapshot.docs.forEach(
+                                                    (documentSnapshot) {
+                                                  documentSnapshot.reference
+                                                      .update({
+                                                    "BusNumber":
+                                                        busDetail.busNumber,
+                                                    "BusStatus":
+                                                        busDetail.isActive,
+                                                    "BusLiveLocation":
+                                                        myLocation.data,
+                                                    "BusStops":
+                                                        busDetail.busStops
+                                                  });
+                                                });
+                                              })
+                                            }
+                                          else
+                                            {
+                                              collection.doc().set({
+                                                "BusNumber":
+                                                    busDetail.busNumber,
+                                                "BusStatus": busDetail.isActive,
+                                                "BusLiveLocation":
+                                                    myLocation.data,
+                                                "BusStops": busDetail.busStops
+                                              })
+                                            }
+                                        });
 
                                 message = "Bus Location Updated Successfully!";
-                              } catch (_) {
+                              } catch (error) {
                                 message = "Error while updating  Bus Location!";
+                                print(error);
                               }
 
                               ScaffoldMessenger.of(context).showSnackBar(

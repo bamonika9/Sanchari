@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:sanchari/UI/GoogleMap/googleMapScreen.dart';
 import 'package:sanchari/UI/GoogleMap/updateBusDetails.dart';
@@ -11,7 +13,25 @@ class Bookmark extends StatefulWidget {
 }
 
 class _BookmarkState extends State<Bookmark> {
+  List<dynamic> _viewBookmarks = [];
   @override
+  void initState() {
+    super.initState();
+    FirebaseFirestore.instance
+        .collection("BookmarkUser")
+        .where("UserId", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .snapshots()
+        .listen((value) {
+      // this.loggedInUser = UserModel.fromMap(value.data());
+      print("fetching");
+      setState(() {
+        _viewBookmarks = List.from(value.docs.map((doc) => doc.data()));
+      });
+      print(_viewBookmarks);
+      // print(value);
+    });
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Theme.of(context).brightness == Brightness.light
@@ -34,7 +54,7 @@ class _BookmarkState extends State<Bookmark> {
             ),
             Expanded(
               child: ListView.builder(
-                  itemCount: 30,
+                  itemCount: _viewBookmarks.length,
                   itemBuilder: (context, index) {
                     return Card(
                       shape: RoundedRectangleBorder(
@@ -47,8 +67,9 @@ class _BookmarkState extends State<Bookmark> {
                             size: 40.0,
                           ),
                         ),
-                        title: Text("KA - 13 F-3456"),
-                        subtitle: Text("Hassan - Sakleshpur"),
+                        title: Text("${_viewBookmarks[index]["BusNumber"]}"),
+                        subtitle:
+                            Text("${_viewBookmarks[index]["startAndEnd"]}"),
                         trailing: Wrap(
                           spacing: 12, // space between two icons
                           children: <Widget>[
@@ -69,7 +90,11 @@ class _BookmarkState extends State<Bookmark> {
                             GestureDetector(
                               onTap: () {
                                 // code to add bookmark to firebase
-                                Navigator.push(context, MaterialPageRoute(builder: ((context) => UpdateBusDetails())));
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: ((context) =>
+                                            UpdateBusDetails())));
                                 ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                         content: Text(

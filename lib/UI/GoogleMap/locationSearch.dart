@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_place/google_place.dart';
 import 'package:sanchari/UI/GoogleMap/googleMapScreen.dart';
@@ -21,7 +22,7 @@ class _LocationSearchState extends State<LocationSearch> {
 
   late FocusNode startFocusNode;
   late FocusNode endFocusNode;
-
+  List<dynamic> _buses = [];
   late GooglePlace googlePlace;
   List<AutocompletePrediction> predictions = [];
 
@@ -53,6 +54,7 @@ class _LocationSearchState extends State<LocationSearch> {
       print(result.predictions!.first.description);
       setState(() {
         predictions = result.predictions!;
+        print(predictions);
       });
     } else {
       print("Something went wrong with places Api!");
@@ -63,6 +65,17 @@ class _LocationSearchState extends State<LocationSearch> {
     setState(() {
       _searched = !_searched;
     });
+    print(_startSearchFieldController.text);
+    print(_endSearchFeildController.text);
+    FirebaseFirestore.instance
+        .collection("BusLocationDetails")
+        .where("BusStops", arrayContainsAny: [
+          _startSearchFieldController.text,
+          _endSearchFeildController.text
+        ])
+        .get()
+        .then((value) =>
+            {_buses = List.from(value.docs.map((doc) => doc.data()))});
   }
 
   @override
@@ -238,6 +251,8 @@ class _LocationSearchState extends State<LocationSearch> {
                         ),
                         onTap: () async {
                           final placeId = predictions[index].placeId!;
+                          final placeLoc =
+                              predictions[index].description.toString();
                           final details =
                               await googlePlace.details.get(placeId);
 
@@ -247,21 +262,22 @@ class _LocationSearchState extends State<LocationSearch> {
                             if (startFocusNode.hasFocus) {
                               setState(() {
                                 startPosition = details.result;
-                                _startSearchFieldController.text =
-                                    details.result!.name!;
+
+                                _startSearchFieldController.text = placeLoc;
                                 predictions = [];
                               });
+                              print("place" + placeLoc);
                             } else {
                               setState(() {
                                 endPosition = details.result;
-                                _endSearchFeildController.text =
-                                    details.result!.name!;
+                                _endSearchFeildController.text = placeLoc;
                                 predictions = [];
                               });
                             }
 
                             if (startPosition != null && endPosition != null) {
                               print("navigation");
+
                               // code to search bus based on start and end location
                             }
                           }
@@ -307,7 +323,7 @@ class _LocationSearchState extends State<LocationSearch> {
                               )),
                           Expanded(
                             child: ListView.builder(
-                                itemCount: 30,
+                                itemCount: _buses.length,
                                 itemBuilder: (context, index) {
                                   return Card(
                                     shape: RoundedRectangleBorder(
@@ -321,8 +337,10 @@ class _LocationSearchState extends State<LocationSearch> {
                                           size: 40.0,
                                         ),
                                       ),
-                                      title: Text("KA - 13 F-3456"),
-                                      subtitle: Text("Hassan - Sakleshpur"),
+                                      title: Text(
+                                          "${_buses[index]["BusLiveLocation"]["geopoint"].toString()}"),
+                                      subtitle: Text(
+                                          "${_buses[index]["BusStops"].first} --->  \n ${_buses[index]["BusStops"].last}"),
                                       trailing: Container(
                                         height: double.infinity,
                                         child: IconButton(

@@ -1,11 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
+import 'package:sanchari/Models/user_model.dart';
 import 'package:sanchari/Providers/darkTheme_provider.dart';
 import 'package:sanchari/UI/Admin/adminDashboard.dart';
 import 'package:sanchari/UI/Auth/Login.dart';
-import 'package:sanchari/UI/GoogleMap/updateBusDetails.dart';
+import 'package:sanchari/UI/busDetails.dart';
 import 'package:sanchari/constants.dart';
 import 'package:sanchari/UI/contactUs.dart';
 import 'package:sanchari/UI/editProfile.dart';
@@ -15,8 +17,31 @@ import 'package:sanchari/UI/Auth/passwordReset.dart';
 import 'package:share/share.dart';
 import 'package:provider/provider.dart';
 
-class Profile extends StatelessWidget {
+class Profile extends StatefulWidget {
   @override
+  State<Profile> createState() => _ProfileState();
+}
+
+class _ProfileState extends State<Profile> {
+  User? user = FirebaseAuth.instance.currentUser;
+
+  UserModel loggedInUser = UserModel();
+
+  @override
+  void initState() {
+    super.initState();
+    FirebaseFirestore.instance
+        .collection("Users")
+        .doc(user?.uid)
+        .get()
+        .then((value) {
+      print(value);
+
+      print("fetching");
+      setState(() {});
+    });
+  }
+
   Widget build(BuildContext context) {
     ScreenUtil.init(context);
     var profileInfo = Expanded(
@@ -106,8 +131,7 @@ class Profile extends StatelessWidget {
                 onTap: () => {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) => const UpdateBusDetails()),
+                    MaterialPageRoute(builder: (context) => const BusDetails()),
                   )
                 },
                 child: ProfileListItem(
@@ -180,11 +204,7 @@ class Profile extends StatelessWidget {
                 FirebaseAuth.instance.signOut(),
                 Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(builder: (context) => Login()),
-                    (Route<dynamic> route) => false),
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => Login()),
-                )
+                    (Route<dynamic> route) => false)
               },
               child: ProfileListItem(
                 icon: LineAwesomeIcons.alternate_sign_out,

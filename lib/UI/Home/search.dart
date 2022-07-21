@@ -1,10 +1,34 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:sanchari/UI/GoogleMap/googleMapScreen.dart';
 import 'package:sanchari/constants.dart';
 
-class Search extends StatelessWidget {
+class Search extends StatefulWidget {
   const Search({Key? key}) : super(key: key);
-  get _busNumberController => TextEditingController();
+
+  @override
+  State<Search> createState() => _SearchState();
+}
+
+class _SearchState extends State<Search> {
+  TextEditingController _busNumberController = TextEditingController();
+  List<dynamic> _buses = [];
+
+  void getBusdetails() {
+    print(_busNumberController.text);
+    FirebaseFirestore.instance
+        .collection("BusLocationDetails")
+        .where("BusNumber", isEqualTo: _busNumberController.text)
+        .snapshots()
+        .listen((value) {
+      print(value.size);
+      setState(() {
+        _buses = List.from(value.docs.map((doc) => doc.data()));
+      });
+      print(_buses);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +59,7 @@ class Search extends StatelessWidget {
               )),
           ElevatedButton(
               onPressed: () {
-                print("hi");
+                getBusdetails();
               },
               child: Text("Search Bus")),
           Expanded(
@@ -72,7 +96,7 @@ class Search extends StatelessWidget {
                         )),
                     Expanded(
                       child: ListView.builder(
-                          itemCount: 30,
+                          itemCount: _buses.length,
                           itemBuilder: (context, index) {
                             return Card(
                               shape: RoundedRectangleBorder(
@@ -86,8 +110,10 @@ class Search extends StatelessWidget {
                                     size: 40.0,
                                   ),
                                 ),
-                                title: Text("KA - 13 F-3456"),
-                                subtitle: Text("Hassan - Sakleshpur"),
+                                title: Text("${_buses.first["BusNumber"]}"),
+                                subtitle: Text(
+                                    "${_buses.first["BusStops"][0].split(",")[0]} - " +
+                                        "${_buses.first["BusStops"].last.split(",")[0]}"),
                                 trailing: Wrap(
                                   spacing: 12, // space between two icons
                                   children: <Widget>[
@@ -108,7 +134,50 @@ class Search extends StatelessWidget {
                                     GestureDetector(
                                       onTap: () {
                                         // code to add bookmark to firebase
-
+                                        bool flag = false;
+                                        FirebaseFirestore.instance
+                                            .collection("BookmarksUser")
+                                            .where("UserId",
+                                                isNotEqualTo: FirebaseAuth
+                                                    .instance.currentUser?.uid)
+                                            .where("UserId",
+                                                isEqualTo:
+                                                    _buses.first['BusNumber'])
+                                            .get()
+                                            .then((value) => {
+                                                  if (value.docs
+                                                      .map((e) => e.data())
+                                                      .map((e) => {
+                                                            if (e['BusNumber'] ==
+                                                                _buses.first[
+                                                                    "BusNumber"])
+                                                              {flag = true}
+                                                          })
+                                                      .isEmpty)
+                                                    {
+                                                      if (flag != true)
+                                                        {
+                                                          FirebaseFirestore
+                                                              .instance
+                                                              .collection(
+                                                                  "BookmarkUser")
+                                                              .doc()
+                                                              .set({
+                                                            "BusNumber": _buses
+                                                                    .first[
+                                                                "BusNumber"],
+                                                            "UserId":
+                                                                FirebaseAuth
+                                                                    .instance
+                                                                    .currentUser
+                                                                    ?.uid,
+                                                            "startAndEnd":
+                                                                "${_buses.first["BusStops"][0].split(",")[0]} - " +
+                                                                    "${_buses.first["BusStops"].last.split(",")[0]}"
+                                                          })
+                                                        }
+                                                    }
+                                                });
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(SnackBar(
                                                 content: Text(

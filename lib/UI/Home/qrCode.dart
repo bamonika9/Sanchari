@@ -42,10 +42,11 @@ import 'package:scan/scan.dart';
 //   }
 // }
 
+// ignore: must_be_immutable
 class Qrcode extends StatelessWidget {
-  @override
   ScanController controller = ScanController();
   String qrcode = 'Unknown';
+  @override
   Widget build(BuildContext context) {
     ScreenUtil.init(context);
 
@@ -63,8 +64,7 @@ class Qrcode extends StatelessWidget {
           print(data);
           Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (context) => BusDetails()),
+            MaterialPageRoute(builder: (context) => BusDetails()),
           );
           // do something
         },
