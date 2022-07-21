@@ -55,7 +55,7 @@ class _LocationSearchState extends State<LocationSearch> {
         predictions = result.predictions!;
       });
     } else {
-      print("cool");
+      print("Something went wrong with places Api!");
     }
   }
 
