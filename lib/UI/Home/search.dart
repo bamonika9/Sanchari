@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:sanchari/UI/Admin/addBus.dart';
 import 'package:sanchari/UI/GoogleMap/googleMapScreen.dart';
 import 'package:sanchari/constants.dart';
 
@@ -14,6 +15,7 @@ class Search extends StatefulWidget {
 class _SearchState extends State<Search> {
   TextEditingController _busNumberController = TextEditingController();
   List<dynamic> _buses = [];
+  late GeoPoint gpoint;
 
   void getBusdetails() {
     print(_busNumberController.text);
@@ -123,7 +125,7 @@ class _SearchState extends State<Search> {
                                             context,
                                             MaterialPageRoute(
                                                 builder: (context) =>
-                                                    const GoogleMapScreen()));
+                                                  AddBus()));
                                       },
                                       child: Icon(
                                         Icons.directions,

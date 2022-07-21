@@ -14,6 +14,8 @@ class Bookmark extends StatefulWidget {
 
 class _BookmarkState extends State<Bookmark> {
   List<dynamic> _viewBookmarks = [];
+  late GeoPoint gpoint;
+
   @override
   void initState() {
     super.initState();
@@ -78,8 +80,10 @@ class _BookmarkState extends State<Bookmark> {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) =>
-                                            GoogleMapScreen()));
+                                        builder: (context) => GoogleMapScreen(
+                                              locLat: gpoint.latitude,
+                                              locLong: gpoint.longitude,
+                                            )));
                               },
                               child: Icon(
                                 Icons.directions,

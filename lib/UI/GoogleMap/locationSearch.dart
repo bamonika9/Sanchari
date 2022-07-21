@@ -25,7 +25,7 @@ class _LocationSearchState extends State<LocationSearch> {
   List<dynamic> _buses = [];
   late GooglePlace googlePlace;
   List<AutocompletePrediction> predictions = [];
-
+  late GeoPoint gpoint;
   bool _searched = true;
 
   Timer? _debounce;
@@ -74,8 +74,11 @@ class _LocationSearchState extends State<LocationSearch> {
           _endSearchFeildController.text
         ])
         .get()
-        .then((value) =>
-            {_buses = List.from(value.docs.map((doc) => doc.data()))});
+        .then((value) => {
+              _buses = List.from(value.docs.map((doc) => doc.data())),
+              gpoint = _buses[0]['BusLiveLocation']['geopoint'],
+              print(gpoint.latitude)
+            });
   }
 
   @override
@@ -325,6 +328,8 @@ class _LocationSearchState extends State<LocationSearch> {
                             child: ListView.builder(
                                 itemCount: _buses.length,
                                 itemBuilder: (context, index) {
+                                  gpoint = _buses[index]['BusLiveLocation']
+                                      ['geopoint'];
                                   return Card(
                                     shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.all(
@@ -337,8 +342,8 @@ class _LocationSearchState extends State<LocationSearch> {
                                           size: 40.0,
                                         ),
                                       ),
-                                      title: Text(
-                                          "${_buses[index]["BusLiveLocation"]["geopoint"].toString()}"),
+                                      title:
+                                          Text("${_buses[index]["BusNumber"]}"),
                                       subtitle: Text(
                                           "${_buses[index]["BusStops"].first} --->  \n ${_buses[index]["BusStops"].last}"),
                                       trailing: Container(
@@ -349,7 +354,12 @@ class _LocationSearchState extends State<LocationSearch> {
                                                 context,
                                                 MaterialPageRoute(
                                                     builder: (context) =>
-                                                        GoogleMapScreen()));
+                                                        GoogleMapScreen(
+                                                          locLat:
+                                                              gpoint.latitude,
+                                                          locLong:
+                                                              gpoint.longitude,
+                                                        )));
                                           },
                                           icon: Icon(Icons.directions),
                                           color: Colors.blue,

@@ -5,7 +5,10 @@ import 'package:location/location.dart';
 import 'package:sanchari/constants.dart';
 
 class GoogleMapScreen extends StatefulWidget {
-  const GoogleMapScreen({Key? key}) : super(key: key);
+  final double locLat;
+  final double locLong;
+  const GoogleMapScreen({Key? key, required this.locLat, required this.locLong})
+      : super(key: key);
 
   @override
   State<GoogleMapScreen> createState() => _GoogleMapScreenState();
@@ -14,13 +17,13 @@ class GoogleMapScreen extends StatefulWidget {
 class _GoogleMapScreenState extends State<GoogleMapScreen> {
   late GoogleMapController mapController;
   // late BitmapDescriptor mapMarker;
+
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
   }
 
   static const LatLng _sourceLocation = LatLng(13.0097956, 76.1196002);
   static const LatLng _destinationLocation = LatLng(12.9839, 76.2181);
-
   List<LatLng> polylineCoordinates = [];
   LocationData? currentLocation;
 
@@ -98,6 +101,12 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
                         currentLocation!.longitude!),
                     infoWindow: InfoWindow(
                         title: "Live Location", snippet: "Updated 10 min ago")),
+                Marker(
+                    markerId: MarkerId("BusLiveLocation"),
+                    position: LatLng(widget.locLat, widget.locLong),
+                    infoWindow: InfoWindow(
+                        title: "Bus Live Location",
+                        snippet: "Updated 10 min ago")),
                 Marker(
                     markerId: MarkerId("Destination"),
                     position: _destinationLocation,
