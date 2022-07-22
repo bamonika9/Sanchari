@@ -100,6 +100,8 @@ class _SearchState extends State<Search> {
                       child: ListView.builder(
                           itemCount: _buses.length,
                           itemBuilder: (context, index) {
+                            gpoint =
+                                _buses[index]['BusLiveLocation']['geopoint'];
                             return Card(
                               shape: RoundedRectangleBorder(
                                   borderRadius:
@@ -125,7 +127,10 @@ class _SearchState extends State<Search> {
                                             context,
                                             MaterialPageRoute(
                                                 builder: (context) =>
-                                                  AddBus()));
+                                                    GoogleMapScreen(
+                                                      locLat: gpoint.latitude,
+                                                      locLong: gpoint.longitude,
+                                                    )));
                                       },
                                       child: Icon(
                                         Icons.directions,

@@ -7,6 +7,7 @@ import 'package:sanchari/Models/user_model.dart';
 import 'package:sanchari/Providers/darkTheme_provider.dart';
 import 'package:sanchari/UI/Admin/adminDashboard.dart';
 import 'package:sanchari/UI/Auth/Login.dart';
+import 'package:sanchari/UI/GoogleMap/updateBusDetails.dart';
 import 'package:sanchari/UI/busDetails.dart';
 import 'package:sanchari/constants.dart';
 import 'package:sanchari/UI/contactUs.dart';
@@ -131,7 +132,7 @@ class _ProfileState extends State<Profile> {
                 onTap: () => {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const BusDetails()),
+                    MaterialPageRoute(builder: (context) => const UpdateBusDetails()),
                   )
                 },
                 child: ProfileListItem(
@@ -139,18 +140,18 @@ class _ProfileState extends State<Profile> {
                     text: 'Update Bus Status'),
               ),
             ),
-            GestureDetector(
-              onTap: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => EditProfile()),
-                )
-              },
-              child: ProfileListItem(
-                icon: LineAwesomeIcons.edit,
-                text: 'Edit Profile',
-              ),
-            ),
+            // GestureDetector(
+            //   onTap: () => {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(builder: (context) => EditProfile()),
+            //     )
+            //   },
+            //   child: ProfileListItem(
+            //     icon: LineAwesomeIcons.edit,
+            //     text: 'Edit Profile',
+            //   ),
+            // ),
             GestureDetector(
               onTap: () => {
                 Navigator.push(

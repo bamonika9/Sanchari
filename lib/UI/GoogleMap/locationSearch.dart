@@ -256,6 +256,7 @@ class _LocationSearchState extends State<LocationSearch> {
                           final placeId = predictions[index].placeId!;
                           final placeLoc =
                               predictions[index].description.toString();
+                              
                           final details =
                               await googlePlace.details.get(placeId);
 
@@ -265,7 +266,8 @@ class _LocationSearchState extends State<LocationSearch> {
                             if (startFocusNode.hasFocus) {
                               setState(() {
                                 startPosition = details.result;
-
+                                print("predthing cordinates");
+                                print(details.result!.geometry);
                                 _startSearchFieldController.text = placeLoc;
                                 predictions = [];
                               });

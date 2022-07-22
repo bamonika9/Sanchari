@@ -19,6 +19,7 @@ class _BookmarkState extends State<Bookmark> {
   @override
   void initState() {
     super.initState();
+
     FirebaseFirestore.instance
         .collection("BookmarkUser")
         .where("UserId", isEqualTo: FirebaseAuth.instance.currentUser!.uid)

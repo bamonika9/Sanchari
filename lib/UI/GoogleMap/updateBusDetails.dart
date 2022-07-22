@@ -41,18 +41,19 @@ class _UpdateBusDetailsState extends State<UpdateBusDetails> {
       GeoFirePoint myLocation = geo.point(
           latitude: currentLocation!.latitude!,
           longitude: currentLocation!.longitude!);
-
-      FirebaseFirestore.instance
-          .collection("BusLocationDetails")
-          .where("BusNumber", isEqualTo: busDetail.busNumber)
-          .get()
-          .then((querySnapshot) {
-        querySnapshot.docs.forEach((documentSnapshot) {
-          documentSnapshot.reference.update({
-            "BusLiveLocation": myLocation.data,
+      if (busDetail.busNumber != null) {
+        FirebaseFirestore.instance
+            .collection("BusLocationDetails")
+            .where("BusNumber", isEqualTo: busDetail.busNumber)
+            .get()
+            .then((querySnapshot) {
+          querySnapshot.docs.forEach((documentSnapshot) {
+            documentSnapshot.reference.update({
+              "BusLiveLocation": myLocation.data,
+            });
           });
         });
-      });
+      }
     });
   }
 
@@ -234,7 +235,8 @@ class _UpdateBusDetailsState extends State<UpdateBusDetails> {
                                         isEqualTo: busDetail.busNumber)
                                     .get()
                                     .then((value) => {
-                                          if (value.size > 0)
+                                          if (value.size > 0 &&
+                                              busDetail.busNumber != null)
                                             {
                                               collection
                                                   .where("BusNumber",
